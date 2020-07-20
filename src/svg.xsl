@@ -4,18 +4,7 @@
     xmlns:sic="http://www.schoenberginstitute.org/schema/collation"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xpath-default-namespace="http://www.schoenberginstitute.org/schema/collation"
-    exclude-result-prefixes="svg xlink sic xs" version="2.0">
-
-    <xsl:output method="xml" indent="yes" encoding="utf-8" doctype-public="-//W3C//DTD SVG 1.1//EN"
-        doctype-system="http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" standalone="no"
-        xpath-default-namespace="http://www.w3.org/2000/svg" exclude-result-prefixes="xlink"
-        include-content-type="no"/>
-
-    <!-- Parameter to be fed the source file name -->
-    <xsl:param name="sourceFileName" select="'Wnnn'"/>
-    
-    <!-- Variable to extrapolate the manuscript ID from the source file name -->
-    <xsl:variable name="msID" select="tokenize($sourceFileName, '_')[1]"/>
+    exclude-result-prefixes="svg xlink sic" version="2.0">
 
     <!-- X and Y reference values - i.e. the registration for the whole diagram, changing these values, the whole diagram can be moved -->
     <xsl:variable name="Ox" select="0"/>
@@ -28,61 +17,40 @@
     <xsl:variable name="leafLength" select="50"/>
 
     <xsl:template match="/">
-        <xsl:for-each select="quires/quire">
-            <xsl:result-document
-                href="{concat('../wam-collation-SVG/', $msID, '/', $msID, '_quire_', @n, '.svg')}"
-                method="xml" indent="yes" encoding="utf-8" doctype-public="-//W3C//DTD SVG 1.1//EN"
-                doctype-system="http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-                <xsl:processing-instruction name="xml-stylesheet">
-                    <xsl:text>href="../../CSS/style.css"&#32;</xsl:text>
-                    <xsl:text>type="text/css"</xsl:text>
-                </xsl:processing-instruction>
-                <xsl:text>&#10;</xsl:text>
-                <xsl:comment>
-                    <xsl:text>SVG file generated on: </xsl:text>
-                    <xsl:value-of select="format-dateTime(current-dateTime(), '[D] [MNn] [Y] at [H]:[m]:[s]')"/>
-                    <xsl:text> using </xsl:text>
-                    <xsl:value-of select="system-property('xsl:product-name')"/>
-                    <xsl:text> version </xsl:text>
-                    <xsl:value-of select="system-property('xsl:product-version')"/>
-                </xsl:comment>
-                <xsl:text>&#10;</xsl:text>
-                <!-- The SVG output is for the moment an A4: change to smaller area -->
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                    version="1.1" x="0" y="0" width="297mm" height="210mm" viewBox="0 0 297 210"
-                    preserveAspectRatio="xMidYMid meet">
-                    <title>Collation diagram quire <xsl:value-of select="@n"/></title>
-                    <!-- Call SVG definitions' template -->
-                    <xsl:call-template name="defs"/>
-                    <desc>Collation diagram quire <xsl:value-of select="@n"/></desc>
-                    <svg>
-                        <xsl:attribute name="x">
-                            <xsl:value-of select="$Ox + 20"/>
-                        </xsl:attribute>
-                        <xsl:attribute name="y">
-                            <xsl:value-of select="$Oy  + 20"/>
-                        </xsl:attribute>
-                        <!-- Variable to remove question marks from position numbering -->
-                        <xsl:variable name="positions">
-                            <xsl:choose>
-                                <xsl:when test="contains(@positions, '?')">
-                                    <xsl:value-of select="if (@positions eq '?') then 2 else xs:integer(translate(@positions, '?', ''))"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="@positions"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:variable>
-                        <!-- Call the template to draw the bifolia -->
-                        <xsl:call-template name="bifoliaDiagram">
-                            <xsl:with-param name="odd1_Even2"
-                                select="if ($positions mod 2 = 0) then 2 else 1"/>
-                            <xsl:with-param name="positions" select="$positions" as="xs:integer"/>
-                        </xsl:call-template>
-                    </svg>
-                </svg>
-            </xsl:result-document>
-        </xsl:for-each>
+        <!-- The SVG output is for the moment an A4: change to smaller area -->
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            version="1.1" x="0" y="0" width="297mm" height="210mm" viewBox="0 0 297 210"
+            preserveAspectRatio="xMidYMid meet">
+            <title>Collation diagram quire <xsl:value-of select="@n"/></title>
+            <!-- Call SVG definitions' template -->
+            <xsl:call-template name="defs"/>
+            <desc>Collation diagram quire <xsl:value-of select="@n"/></desc>
+            <svg>
+                <xsl:attribute name="x">
+                    <xsl:value-of select="$Ox + 20"/>
+                </xsl:attribute>
+                <xsl:attribute name="y">
+                    <xsl:value-of select="$Oy  + 20"/>
+                </xsl:attribute>
+                <!-- Variable to remove question marks from position numbering -->
+                <xsl:variable name="positions">
+                    <xsl:choose>
+                        <xsl:when test="contains(@positions, '?')">
+                            <xsl:value-of select="if (@positions eq '?') then 2 else xs:integer(translate(@positions, '?', ''))"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@positions"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <!-- Call the template to draw the bifolia -->
+                <xsl:call-template name="bifoliaDiagram">
+                    <xsl:with-param name="odd1_Even2"
+                        select="if ($positions mod 2 = 0) then 2 else 1"/>
+                    <xsl:with-param name="positions" select="$positions" as="xs:integer"/>
+                </xsl:call-template>
+            </svg>
+        </svg>
     </xsl:template>
 
     <xsl:template name="bifoliaDiagram">
