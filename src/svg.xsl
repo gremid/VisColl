@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+<xsl:stylesheet
+    xmlns="http://www.w3.org/2000/svg"
     xmlns:svg="http://www.w3.org/2000/svg"
-    xmlns:sic="http://www.schoenberginstitute.org/schema/collation"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xpath-default-namespace="http://www.schoenberginstitute.org/schema/collation"
-    exclude-result-prefixes="svg xlink sic" version="2.0">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0"
+    exclude-result-prefixes="svg xlink xs" version="2.0">
 
     <!-- X and Y reference values - i.e. the registration for the whole diagram, changing these values, the whole diagram can be moved -->
     <xsl:variable name="Ox" select="0"/>
@@ -17,40 +19,46 @@
     <xsl:variable name="leafLength" select="50"/>
 
     <xsl:template match="/">
-        <!-- The SVG output is for the moment an A4: change to smaller area -->
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-            version="1.1" x="0" y="0" width="297mm" height="210mm" viewBox="0 0 297 210"
-            preserveAspectRatio="xMidYMid meet">
-            <title>Collation diagram quire <xsl:value-of select="@n"/></title>
-            <!-- Call SVG definitions' template -->
-            <xsl:call-template name="defs"/>
-            <desc>Collation diagram quire <xsl:value-of select="@n"/></desc>
-            <svg>
-                <xsl:attribute name="x">
-                    <xsl:value-of select="$Ox + 20"/>
-                </xsl:attribute>
-                <xsl:attribute name="y">
-                    <xsl:value-of select="$Oy  + 20"/>
-                </xsl:attribute>
-                <!-- Variable to remove question marks from position numbering -->
-                <xsl:variable name="positions">
-                    <xsl:choose>
-                        <xsl:when test="contains(@positions, '?')">
-                            <xsl:value-of select="if (@positions eq '?') then 2 else xs:integer(translate(@positions, '?', ''))"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="@positions"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <!-- Call the template to draw the bifolia -->
-                <xsl:call-template name="bifoliaDiagram">
-                    <xsl:with-param name="odd1_Even2"
-                        select="if ($positions mod 2 = 0) then 2 else 1"/>
-                    <xsl:with-param name="positions" select="$positions" as="xs:integer"/>
-                </xsl:call-template>
-            </svg>
-        </svg>
+      <xsl:variable name="title" select="concat('Collation diagram: ', TEI/teiHeader/fileDesc/titleStmt/title/text())"/>
+      <!-- The SVG output is for the moment an A4: change to smaller area -->
+      <svg xmlns:xlink="http://www.w3.org/1999/xlink"
+           version="1.1" x="0" y="0" width="297mm" height="210mm" viewBox="0 0 297 210"
+           preserveAspectRatio="xMidYMid meet">
+        <title><xsl:value-of select="$title"/></title>
+        <desc><xsl:value-of select="$title"/></desc>
+        <defs>
+          <filter id="f1" filterUnits="userSpaceOnUse">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1"/>
+          </filter>
+        </defs>
+        <g>
+          <xsl:attribute name="x"><xsl:value-of select="$Ox + 20"/></xsl:attribute>
+          <xsl:attribute name="y"><xsl:value-of select="$Oy  + 20"/></xsl:attribute>
+          <xsl:apply-templates select="//msDesc/physDesc/objectDesc/supportDesc/collation[1]"/>
+        </g>
+      </svg>
+    </xsl:template>
+
+    <xsl:template match="collation" name="collation">
+      <g>
+        <desc>Collation</desc>
+        <xsl:apply-templates select="//item[parent::list[@type='quire']]"/>
+      </g>
+    </xsl:template>
+
+    <xsl:template match="item[parent::list[@type='quire']]" name="quire">
+      <g>
+        <desc>Quire #<xsl:value-of select="@n"/></desc>
+        <xsl:apply-templates select="list[@type='leaf']"/>
+      </g>
+    </xsl:template>
+
+    <xsl:template match="list[@type='leaf']" name="leaves">
+      <xsl:variable name="inner" select="count(.//list[@type='leaf'])"/>
+      <g>
+        <desc>Leaves with nesting #<xsl:value-of select="$inner"/></desc>
+        <xsl:apply-templates select="item/list[@type='leaf']"/>
+      </g>
     </xsl:template>
 
     <xsl:template name="bifoliaDiagram">
@@ -239,15 +247,6 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:attribute>
-    </xsl:template>
-
-    <!-- SVG definitions' template -->
-    <xsl:template name="defs">
-        <defs xmlns="http://www.w3.org/2000/svg">
-            <filter id="f1" filterUnits="userSpaceOnUse">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="1"/>
-            </filter>
-        </defs>
     </xsl:template>
 
     <!-- Uncertainty template -->

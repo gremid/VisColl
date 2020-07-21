@@ -5,7 +5,8 @@
 
   <p:validate-with-relax-ng>
     <p:input port="schema">
-      <p:document href="datamodel.rng"/>
+      <p:document href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_ms.rng"/>
+      <!-- p:document href="datamodel.rng"/ -->
     </p:input>
   </p:validate-with-relax-ng>
   
