@@ -1,0 +1,10 @@
+{:paths ["src"]
+ :deps
+ {org.clojure/clojure {:mvn/version "1.10.1"}
+
+  ;; Utilities
+  org.clojure/tools.cli {:mvn/version "0.4.2"}
+  instaparse {:mvn/version "1.4.10"}
+
+  ;; Data formats
+  org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}}}

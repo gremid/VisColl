@@ -1,0 +1,15 @@
+formula = (flyleaf+ <comma>)? quire (<comma> quire)* (<comma> flyleaf+)?
+
+flyleaf = <'i'>
+
+quire = id <'('> leaves (<comma> substract)? <')'>
+
+id = n | range
+leaves = n
+substract = <'-'> n (<comma> n)*
+
+<range> = n <'-'> n
+<n> = #'\d+'
+
+<comma> = #'\s*,\s*'
+<ws> = #'\s+'
